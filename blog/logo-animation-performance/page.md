@@ -7,7 +7,7 @@ tags:
   - animation
   - performance
 ---
-
+기
 # JS Animation 성능 이슈 해결하기
 
 올해(2023년) 초 [개인 웹사이트](sterd.dev)를 개발하며, Landing 페이지에 개인 로고가 애니메이션을 통해 등장하는 식으로 구현을 했다.
