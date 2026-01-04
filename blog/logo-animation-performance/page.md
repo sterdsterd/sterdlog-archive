@@ -1,13 +1,13 @@
 ---
 title: JS 애니메이션 성능 개선하기
-date: "2023-05-03"
-summary: "requestAnimationFrame()을 사용해서 애니메이션 성능을 개선해봅시다."
+date: 2023-05-03
+summary: requestAnimationFrame()을 사용해서 애니메이션 성능을 개선해봅시다.
 tags:
   - web
   - animation
   - performance
 ---
-기
+
 # JS Animation 성능 이슈 해결하기
 
 올해(2023년) 초 [개인 웹사이트](sterd.dev)를 개발하며, Landing 페이지에 개인 로고가 애니메이션을 통해 등장하는 식으로 구현을 했다.
@@ -19,17 +19,17 @@ tags:
 # `setInterval()`로 Animation 구현
 
 ```tsx
-const [angle, setAngle] = useState<number>(-0.4)
+const [angle, setAngle] = useState<number>(-0.4);
 
 useEffect(() => {
   const c = setInterval(() => {
-    if (1 >= angle) setAngle(angle + 0.0025)
-  }, 1)
+    if (1 >= angle) setAngle(angle + 0.0025);
+  }, 1);
 
   return () => {
-    clearInterval(c)
-  }
-}, [angle])
+    clearInterval(c);
+  };
+}, [angle]);
 ```
 
 일단 처음 작성한 코드의 일부는 위와 같은데, `useEffect` Hook로 `angle`이 변할 때 마다 `setInterval()`을 실행시키고? 바로 `clearInterval()`해버리는 식으로 코드를 작성한 것 같은데, 지금 보니 왜 이렇게 짰는지 모르겠다..
@@ -52,39 +52,39 @@ useEffect(() => {
 그에 반해 `setInterval()`은 일정한 시간 간격으로 지정된 작업을 반복적으로 실행하는 함수인데, `setInterval()`은 정확한 간격으로 작업을 실행하지 않을 수 있으며, 브라우저가 작업을 처리하는 동안 지연이 발생할 수 있다. 이러한 지연은 애니메이션에 사용하는 데는 적합하지 않으며, 부드러운 애니메이션을 구현하기 위해 `requestAnimationFrame()`을 사용하기로 했다.
 
 ```tsx
-const refAngle = useRef<number>(-0.4)
-const [angle, setAngle] = useState<number>(-0.4)
-var then: Date
-var startTime: Date
-var frameCount: number = 0
+const refAngle = useRef<number>(-0.4);
+const [angle, setAngle] = useState<number>(-0.4);
+var then: Date;
+var startTime: Date;
+var frameCount: number = 0;
 
 const animate = () => {
-  if (refAngle.current > 1) return
-  var now: Date = new Date()
+  if (refAngle.current > 1) return;
+  var now: Date = new Date();
 
-  then = new Date(now.getTime() - (elapsed % FPS))
+  then = new Date(now.getTime() - (elapsed % FPS));
 
-  var sinceStart = now.getTime() - startTime.getTime()
-  var currentFps = Math.round((1000 / (sinceStart / ++frameCount)) * 100) / 100
+  var sinceStart = now.getTime() - startTime.getTime();
+  var currentFps = Math.round((1000 / (sinceStart / ++frameCount)) * 100) / 100;
 
-  setAngle(refAngle.current + 1.25 / currentFps)
+  setAngle(refAngle.current + 1.25 / currentFps);
 
-  requestAnimationFrame(animate)
-}
+  requestAnimationFrame(animate);
+};
 
 useEffect(() => {
-  then = new Date()
-  startTime = then
-  var animationFrame = requestAnimationFrame(animate)
+  then = new Date();
+  startTime = then;
+  var animationFrame = requestAnimationFrame(animate);
 
   return () => {
-    cancelAnimationFrame(animationFrame)
-  }
-}, [])
+    cancelAnimationFrame(animationFrame);
+  };
+}, []);
 
 useEffect(() => {
-  refAngle.current = angle
-}, [angle])
+  refAngle.current = angle;
+}, [angle]);
 ```
 
 위 소스는 `requestAnimationFrame()`을 사용하여 애니메이션을 구현한 것이다.
@@ -120,37 +120,37 @@ useEffect(() => {
 그래서, `new Date()`로 시간을 측정하던 부분을 `performance.now()`로 모두 리팩토링하였고, 작성된 소스코드는 다음과 같다.
 
 ```tsx
-const refAngle = useRef<number>(-0.4)
-const [angle, setAngle] = useState<number>(-0.4)
-var then: number
-var startTime: number
-var frameCount: number = 0
+const refAngle = useRef<number>(-0.4);
+const [angle, setAngle] = useState<number>(-0.4);
+var then: number;
+var startTime: number;
+var frameCount: number = 0;
 
 const animate = () => {
-  if (refAngle.current > 1) return
+  if (refAngle.current > 1) return;
 
-  var now: number = performance.now()
+  var now: number = performance.now();
 
-  var sinceStart = now - startTime
+  var sinceStart = now - startTime;
 
-  var currentFps = Math.round((1000 / (sinceStart / ++frameCount)) * 100) / 100
+  var currentFps = Math.round((1000 / (sinceStart / ++frameCount)) * 100) / 100;
 
-  refAngle.current += 1.25 / currentFps
-  setAngle(refAngle.current)
+  refAngle.current += 1.25 / currentFps;
+  setAngle(refAngle.current);
 
-  requestAnimationFrame(animate)
-}
+  requestAnimationFrame(animate);
+};
 
 useEffect(() => {
-  then = performance.now()
-  startTime = then
+  then = performance.now();
+  startTime = then;
 
-  var animationFrame = requestAnimationFrame(animate)
+  var animationFrame = requestAnimationFrame(animate);
 
   return () => {
-    cancelAnimationFrame(animationFrame)
-  }
-}, [])
+    cancelAnimationFrame(animationFrame);
+  };
+}, []);
 ```
 
 그런데, 위 글에 딸린 Comment들을 읽던 도중 다음과 같은 글을 발견했다.
