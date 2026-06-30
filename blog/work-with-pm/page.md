@@ -1,7 +1,7 @@
 ---
-title: 뇌뺴기(중의적 의미)
+title: 내가 기획자와 일하는 방법
 date: 2026-06-30
-summary: 내가 기획자와 일하는 방법
+summary: 뇌 빼기(중의적 의미)
 tags:
   - Product
 ---
